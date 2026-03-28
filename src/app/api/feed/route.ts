@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const systemPosts = generateSystemPosts(allUsers, networkIds);
+    const systemPosts = generateSystemPosts(allUsers, networkIds ?? allUsers.map((u) => u.id));
 
     // Compose feed
     const feedItems: FeedItem[] = [
