@@ -5,64 +5,64 @@ import {
   useContext,
   useState,
   useEffect,
-  useCallback,
   ReactNode,
 } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { UserSummary } from "@/types";
 
 interface UserContextValue {
   currentUserId: string | null;
   currentUser: UserSummary | null;
+  setCurrentUserId: (id: string) => void;
+  allUsers: UserSummary[];
   safeMode: boolean;
   setSafeMode: (v: boolean) => void;
   toggleSafeMode: () => void;
   mounted: boolean;
-  signOut: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextValue>({
   currentUserId: null,
   currentUser: null,
+  setCurrentUserId: () => {},
+  allUsers: [],
   safeMode: true,
   setSafeMode: () => {},
   toggleSafeMode: () => {},
   mounted: false,
-  signOut: async () => {},
 });
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<UserSummary | null>(null);
+  const [allUsers, setAllUsers] = useState<UserSummary[]>([]);
+  const [currentUserId, setCurrentUserIdState] = useState<string | null>(null);
   const [safeMode, setSafeModeState] = useState(true);
   const [mounted, setMounted] = useState(false);
 
-  const fetchCurrentUser = useCallback(async () => {
-    const res = await fetch("/api/me");
-    const user: UserSummary | null = await res.json();
-    setCurrentUser(user);
+  useEffect(() => {
+    fetch("/api/users")
+      .then((r) => r.json())
+      .then((users: UserSummary[]) => {
+        setAllUsers(users);
+
+        const storedId = localStorage.getItem("currentUserId");
+        const validId =
+          storedId && users.find((u) => u.id === storedId)
+            ? storedId
+            : users[0]?.id ?? null;
+        setCurrentUserIdState(validId);
+
+        const storedSafe = localStorage.getItem("safeMode");
+        if (storedSafe !== null) {
+          setSafeModeState(JSON.parse(storedSafe));
+        }
+
+        setMounted(true);
+      });
   }, []);
 
-  useEffect(() => {
-    const supabase = createClient();
-
-    // Restore safeMode from localStorage
-    const storedSafe = localStorage.getItem("safeMode");
-    if (storedSafe !== null) {
-      setSafeModeState(JSON.parse(storedSafe));
-    }
-
-    // Initial user fetch
-    fetchCurrentUser().then(() => setMounted(true));
-
-    // Keep user in sync with auth state changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      fetchCurrentUser();
-    });
-
-    return () => subscription.unsubscribe();
-  }, [fetchCurrentUser]);
+  const setCurrentUserId = (id: string) => {
+    setCurrentUserIdState(id);
+    localStorage.setItem("currentUserId", id);
+  };
 
   const setSafeMode = (v: boolean) => {
     setSafeModeState(v);
@@ -71,22 +71,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const toggleSafeMode = () => setSafeMode(!safeMode);
 
-  const signOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    setCurrentUser(null);
-  };
+  const currentUser = allUsers.find((u) => u.id === currentUserId) ?? null;
 
   return (
     <UserContext.Provider
       value={{
-        currentUserId: currentUser?.id ?? null,
+        currentUserId,
         currentUser,
+        setCurrentUserId,
+        allUsers,
         safeMode,
         setSafeMode,
         toggleSafeMode,
         mounted,
-        signOut,
       }}
     >
       {children}

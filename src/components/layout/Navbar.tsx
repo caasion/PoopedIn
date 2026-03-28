@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import UserSwitcher from "@/components/shared/UserSwitcher";
 import { useUser } from "@/context/UserContext";
 
 export default function Navbar() {
-  const { safeMode, toggleSafeMode, mounted, currentUser, signOut } = useUser();
+  const { safeMode, toggleSafeMode, mounted } = useUser();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -42,39 +42,13 @@ export default function Navbar() {
           {/* Divider */}
           <div className="w-px h-6 bg-gray-200" />
 
-          {/* Auth controls */}
-          {!mounted ? null : currentUser ? (
-            <div className="flex items-center gap-2">
-              <Link
-                href={`/profile/${currentUser.id}`}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-              >
-                <Image
-                  src={currentUser.avatarUrl}
-                  alt={currentUser.name}
-                  width={30}
-                  height={30}
-                  className="rounded-full"
-                />
-                <span className="text-sm font-medium text-gray-700 hidden md:block">
-                  {currentUser.name}
-                </span>
-              </Link>
-              <button
-                onClick={signOut}
-                className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-              >
-                Sign out
-              </button>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="bg-[#0A66C2] text-white text-sm font-medium px-4 py-1.5 rounded-full hover:bg-[#004182] transition-colors"
-            >
-              Sign in
-            </Link>
-          )}
+          {/* View as: label + user switcher */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 hidden md:block">
+              Viewing as:
+            </span>
+            <UserSwitcher />
+          </div>
         </div>
       </div>
     </nav>
