@@ -21,11 +21,11 @@ export default function FeedList({ isCreateModalOpen, onModalOpen, onModalClose 
   const [error, setError] = useState("");
 
   const loadFeed = useCallback(async () => {
-    if (!currentUserId) return;
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/feed?userId=${currentUserId}`);
+      const url = currentUserId ? `/api/feed?userId=${currentUserId}` : `/api/feed`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to load feed");
       const items: FeedItem[] = await res.json();
       setFeedItems(items);
@@ -37,7 +37,7 @@ export default function FeedList({ isCreateModalOpen, onModalOpen, onModalClose 
   }, [currentUserId]);
 
   useEffect(() => {
-    if (mounted && currentUserId) {
+    if (mounted) {
       loadFeed();
     }
   }, [currentUserId, mounted, loadFeed]);

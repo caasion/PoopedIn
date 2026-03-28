@@ -47,4 +47,5 @@ prisma/dev.db-journal
 # Uploads (keep seed images, ignore user uploads)
 /public/uploads/*
 !/public/uploads/.gitkeep
-!/public/uploads/seed-poop-*.svg
+!/public/uploads/poop-seed-*.jpg
+!/public/uploads/poop-seed-*.webp

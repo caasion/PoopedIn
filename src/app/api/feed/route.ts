@@ -16,20 +16,20 @@ const userSelect = {
 export async function GET(request: NextRequest) {
   try {
     const userId = request.nextUrl.searchParams.get("userId");
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
+
+    // Unauthenticated: show all posts
+    let networkIds: string[] | null = null;
+    if (userId) {
+      const follows = await prisma.follows.findMany({
+        where: { followerId: userId },
+        select: { followingId: true },
+      });
+      networkIds = [userId, ...follows.map((f) => f.followingId)];
     }
 
-    // Get followed user IDs
-    const follows = await prisma.follows.findMany({
-      where: { followerId: userId },
-      select: { followingId: true },
-    });
-    const networkIds = [userId, ...follows.map((f) => f.followingId)];
-
-    // Fetch posts from network
+    // Fetch posts from network (or all posts if unauthenticated)
     const posts = await prisma.post.findMany({
-      where: { userId: { in: networkIds } },
+      where: networkIds ? { userId: { in: networkIds } } : undefined,
       include: {
         user: { select: userSelect },
         reactions: true,
@@ -43,9 +43,9 @@ export async function GET(request: NextRequest) {
       take: 50,
     });
 
-    // Fetch repoops from network
+    // Fetch repoops from network (or all if unauthenticated)
     const repoops = await prisma.repoop.findMany({
-      where: { userId: { in: networkIds } },
+      where: networkIds ? { userId: { in: networkIds } } : undefined,
       include: {
         user: { select: userSelect },
         post: {
