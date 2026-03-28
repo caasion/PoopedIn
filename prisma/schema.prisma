@@ -3,12 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
   id        String   @id @default(cuid())
+  authId    String?  @unique  // Supabase auth.users UUID; null for seed users
   name      String
   avatarUrl String
   bio       String   @default("")
@@ -24,8 +26,8 @@ model User {
 }
 
 model Post {
-  id        String   @id @default(cuid())
-  userId    String
+  id          String   @id @default(cuid())
+  userId      String
   imageUrl    String
   caption     String   @default("")
   bristolType String?
@@ -39,7 +41,7 @@ model Post {
 }
 
 model Reaction {
-  id     String       @id @default(cuid())
+  id     String @id @default(cuid())
   postId String
   userId String
   type   String

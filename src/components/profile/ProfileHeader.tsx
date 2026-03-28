@@ -44,10 +44,7 @@ export default function ProfileHeader({
       const res = await fetch("/api/follows", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          followerId: currentUserId,
-          followingId: profile.id,
-        }),
+        body: JSON.stringify({ followingId: profile.id }),
       });
       const data = await res.json();
       const nowFollowing = data.action === "followed";

@@ -1,18 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { saveUploadedFile } from "@/lib/upload";
 import { detectPoop } from "@/lib/poopDetector";
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth check
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const dbUser = await prisma.user.findUnique({ where: { authId: user.id } });
+    if (!dbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("image") as File | null;
     const caption = (formData.get("caption") as string) ?? "";
-    const userId = formData.get("userId") as string;
 
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
-    }
     if (!file || file.size === 0) {
       return NextResponse.json({ error: "Image required" }, { status: 400 });
     }
@@ -35,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Create post with Bristol Stool metadata
     const post = await prisma.post.create({
       data: {
-        userId,
+        userId: dbUser.id,
         imageUrl,
         caption,
         bristolType: detection.bristolType,

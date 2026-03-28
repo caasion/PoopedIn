@@ -64,7 +64,7 @@ export default function ReactionsBar({
       const res = await fetch("/api/reactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, userId: currentUserId, type }),
+        body: JSON.stringify({ postId, type }),
       });
       const data = await res.json();
       onReactionChange(data.reactions);
@@ -81,7 +81,7 @@ export default function ReactionsBar({
       await fetch("/api/repoops", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, userId: currentUserId }),
+        body: JSON.stringify({ postId }),
       });
       onRepoopClick();
     } catch {

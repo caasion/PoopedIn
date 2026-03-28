@@ -1,13 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { postId, userId } = await request.json();
-
-    if (!postId || !userId) {
-      return NextResponse.json({ error: "postId and userId required" }, { status: 400 });
+    // Auth check
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const dbUser = await prisma.user.findUnique({ where: { authId: user.id } });
+    if (!dbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const { postId } = await request.json();
+
+    if (!postId) {
+      return NextResponse.json({ error: "postId required" }, { status: 400 });
+    }
+
+    const userId = dbUser.id;
 
     const post = await prisma.post.findUnique({ where: { id: postId } });
     if (!post) {

@@ -15,7 +15,7 @@ export default function CreatePostModal({
   onClose,
   onPostCreated,
 }: CreatePostModalProps) {
-  const { currentUser, currentUserId } = useUser();
+  const { currentUser } = useUser();
   const [caption, setCaption] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -39,7 +39,6 @@ export default function CreatePostModal({
       setError("A photo is required to drop a poop.");
       return;
     }
-    if (!currentUserId) return;
 
     setSubmitting(true);
     setError("");
@@ -48,7 +47,6 @@ export default function CreatePostModal({
       const formData = new FormData();
       formData.append("image", imageFile);
       formData.append("caption", caption);
-      formData.append("userId", currentUserId);
 
       const res = await fetch("/api/posts", { method: "POST", body: formData });
 

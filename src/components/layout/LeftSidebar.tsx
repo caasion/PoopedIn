@@ -10,7 +10,7 @@ interface SidebarProps {
 }
 
 export default function LeftSidebar({ onDropPoop }: SidebarProps) {
-  const { currentUser, currentUserId, allUsers, mounted } = useUser();
+  const { currentUser, currentUserId, mounted } = useUser();
   const [snifferCount, setSnifferCount] = useState<number | null>(null);
   const [suggestions, setSuggestions] = useState<UserSummary[]>([]);
 
@@ -21,14 +21,16 @@ export default function LeftSidebar({ onDropPoop }: SidebarProps) {
       .then((r) => r.json())
       .then((data) => {
         setSnifferCount(data.snifferCount ?? 0);
-        // Suggestions: users not yet followed, excluding self
-        const followedIds = new Set<string>();
-        // We'll derive from allUsers; backend gives snifferCount
-        // For suggestions, show random non-followed users
-        const others = allUsers.filter((u) => u.id !== currentUserId);
+      });
+
+    // Fetch all users to build suggestions (exclude self)
+    fetch("/api/users")
+      .then((r) => r.json())
+      .then((users: UserSummary[]) => {
+        const others = users.filter((u) => u.id !== currentUserId);
         setSuggestions(others.slice(0, 3));
       });
-  }, [currentUserId, mounted, allUsers]);
+  }, [currentUserId, mounted]);
 
   if (!mounted) {
     return (
