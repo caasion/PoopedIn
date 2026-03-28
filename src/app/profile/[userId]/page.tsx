@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 import AppShell from "@/components/layout/AppShell";
 import LeftSidebar from "@/components/layout/LeftSidebar";
@@ -34,9 +34,9 @@ interface ProfileData {
 export default function ProfilePage({
   params,
 }: {
-  params: Promise<{ userId: string }>;
+  params: { userId: string };
 }) {
-  const { userId } = use(params);
+  const { userId } = params;
   const { currentUserId, mounted } = useUser();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -47,9 +47,15 @@ export default function ProfilePage({
     if (!userId) return;
     setLoading(true);
     fetch(`/api/profile/${userId}`)
-      .then((r) => r.json())
-      .then((data: ProfileData) => {
+      .then((r) => {
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then((data: ProfileData | null) => {
         setProfile(data);
+        setLoading(false);
+      })
+      .catch(() => {
         setLoading(false);
       });
   }, [userId]);

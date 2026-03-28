@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { generateSystemPosts } from "@/lib/systemPosts";
 import type { FeedItem, ReactionType } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 const userSelect = {
   id: true,
   name: true,

@@ -4,10 +4,10 @@ import { calculateStreak } from "@/lib/streak";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: { userId: string } }
 ) {
   try {
-    const { userId } = await params;
+    const { userId } = params;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
