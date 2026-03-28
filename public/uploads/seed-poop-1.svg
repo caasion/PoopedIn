@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#f5f3e8"/>
+  <rect x="20" y="20" width="760" height="560" rx="12" fill="#ede9d0" opacity="0.6"/>
+  <text x="400" y="340" font-size="200" text-anchor="middle" dominant-baseline="central" font-family="serif">💩</text>
+  <text x="400" y="520" font-size="22" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" fill="#8a7a50" font-style="italic">Morning Excellence • 6:47 AM</text>
+</svg>

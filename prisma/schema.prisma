@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  avatarUrl String
+  bio       String   @default("")
+  title     String   @default("")
+  createdAt DateTime @default(now())
+
+  posts     Post[]
+  reactions Reaction[]
+  comments  Comment[]
+  repoops   Repoop[]
+  following Follows[]  @relation("follower")
+  followers Follows[]  @relation("following")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  userId    String
+  imageUrl    String
+  caption     String   @default("")
+  bristolType String?
+  confidence  Float?
+  createdAt   DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id])
+  reactions Reaction[]
+  comments  Comment[]
+  repoops   Repoop[]
+}
+
+model Reaction {
+  id     String       @id @default(cuid())
+  postId String
+  userId String
+  type   String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Follows {
+  id          String @id @default(cuid())
+  followerId  String
+  followingId String
+
+  follower  User @relation("follower",  fields: [followerId],  references: [id])
+  following User @relation("following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
+model Repoop {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
